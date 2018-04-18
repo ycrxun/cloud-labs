@@ -1,0 +1,23 @@
+version: '3'
+services:
+  server:
+    image: traefik
+    command: --web --docker --docker.domain=cloud.ronggle.com 
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - proxy
+    labels:
+      - traefik.backend=traefik
+      - traefik.frontend.rule=Host:monitor.cloud.ronggle.com
+      - traefik.port=8080
+      - traefik.docker.network=proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+#      - /dev/null:/traefik.toml
+      - /root/traefik/traefik.toml:/traefik.toml
+      - /root/traefik/acme.json:/acme.json
+networks:
+  proxy:
+    external: true

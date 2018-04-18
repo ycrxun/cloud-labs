@@ -1,0 +1,41 @@
+debug = false
+
+logLevel = "ERROR"
+defaultEntryPoints = ["http"]
+
+[web]
+address = ":8080"
+readOnly = true
+[web.auth.basic]
+  users = ["ycrxun:$apr1$.V815oxv$W.P.ncjtubx4jOdO99gUb1"]
+
+[entryPoints]
+  [entryPoints.http]
+  address = ":80"
+#    [entryPoints.http.redirect]
+#      entryPoint = "https"
+#  [entryPoints.https]
+#  address = ":443"
+#    [entryPoints.https.tls]
+#      [[entryPoints.https.tls.certificates]]
+#      certFile = "/root/traefik/ssl/ca_chain.crt" 
+#      keyFile = "/root/traefik/ssl/private.pem"
+
+#[docker]
+#endpoint = "unix:///var/run/docker.sock"
+#domain = "cloud.ronggle.com"
+#watch = true
+#swarmmode = true
+#exposedbydefault = false
+
+#[acme]
+#  email = "ycrxun@163.com"
+#  storage = "acme.json"
+#  entryPoint = "https"
+#[acme.httpChallenge]
+#  entryPoint = "http"
+#  onHostRule = true
+#caServer = "https://acme-staging.api.letsencrypt.org/directory"
+
+#[[acme.domains]]
+#  main = "cloud.ronggle.com"
