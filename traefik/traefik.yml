@@ -1,23 +1,21 @@
-version: '3'
+version: '3.3'
 services:
-  server:
+  proxy:
     image: traefik
-    command: --web --docker --docker.domain=cloud.ronggle.com 
+    command: --web --docker --docker.domain=cloud-labs.io --docker.watch --docker.swarmmode=true --logLevel=DEBUG
+    deploy:
+      labels:
+        - traefik.backend=traefik
+        - traefik.frontend.rule=Host:monitor.cloud-labs.io
+        - traefik.port=8080
+        - traefik.docker.network=traefik_proxy
+    networks:
+      - proxy
     ports:
       - "80:80"
       - "443:443"
-    networks:
-      - proxy
-    labels:
-      - traefik.backend=traefik
-      - traefik.frontend.rule=Host:monitor.cloud.ronggle.com
-      - traefik.port=8080
-      - traefik.docker.network=proxy
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-#      - /dev/null:/traefik.toml
-      - /root/traefik/traefik.toml:/traefik.toml
-      - /root/traefik/acme.json:/acme.json
+      - /dev/null:/traefik.toml
 networks:
   proxy:
-    external: true

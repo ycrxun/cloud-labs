@@ -1,0 +1,20 @@
+version: '3.3'
+services:
+  server:
+    image: gitea/gitea:latest
+    deploy:
+      labels:
+        - traefik.backend=gitea
+        - traefik.frontend.rule=Host:git.cloud-labs.io
+        - traefik.port=3000
+        - traefik.docker.network=traefik_proxy
+    networks:
+      - traefik_proxy
+    volumes:
+      - gitea:/data
+networks:
+  traefik_proxy:
+    external: true
+
+volumes:
+  gitea:
