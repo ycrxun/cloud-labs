@@ -1,0 +1,20 @@
+version: "3.3"
+services:
+  server:
+    image: seafileltd/seafile:latest
+    environment:
+      SEAFILE_SERVER_HOSTNAME: pan.cloud.ronggle.com
+    volumes:
+      - seafile-data:/shared
+    deploy:
+      labels:
+        - traefik.backend=seafile
+        - traefik.frontend.rule=Host:pan.cloud.ronggle.com
+        - traefik.docker.network=traefik_proxy
+        - traefik.port=80 
+volumes:
+  seafile-data:
+
+networks:
+  traefik_proxy:
+    external: true
