@@ -1,0 +1,127 @@
+version: "3.3"
+services:
+  pd1:
+    image: pingcap/pd
+    command:
+      - --name=pd1
+      - --data-dir=/data/pd1
+      - --client-urls=http://0.0.0.0:2379
+      - --peer-urls=http://0.0.0.0:2380
+      - --advertise-client-urls=http://pd1:2379
+      - --advertise-peer-urls=http://pd1:2380
+      - --initial-cluster=pd1=http://pd1:2380,pd2=http://pd2:2380,pd3=http://pd3:2380
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - pd1:/data
+    networks:
+      - tidb
+  
+  pd2:
+    image: pingcap/pd
+    command:
+      - --name=pd2
+      - --data-dir=/data/pd2
+      - --client-urls=http://0.0.0.0:2379
+      - --peer-urls=http://0.0.0.0:2380
+      - --advertise-client-urls=http://pd2:2379
+      - --advertise-peer-urls=http://pd2:2380
+      - --initial-cluster=pd1=http://pd1:2380,pd2=http://pd2:2380,pd3=http://pd3:2380
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - pd2:/data
+    networks:
+      - tidb
+
+  pd3:
+    image: pingcap/pd:latest
+    command:
+      - --name=pd3
+      - --data-dir=/data/pd3
+      - --client-urls=http://0.0.0.0:2379
+      - --peer-urls=http://0.0.0.0:2380
+      - --advertise-client-urls=http://pd3:2379
+      - --advertise-peer-urls=http://pd3:2380
+      - --initial-cluster=pd1=http://pd1:2380,pd2=http://pd2:2380,pd3=http://pd3:2380
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - pd3:/data
+    networks:
+      - tidb
+  
+  tikv1:
+    image: pingcap/tikv:latest
+    command:
+      - --addr=0.0.0.0:20160
+      - --advertise-addr=tikv1:20160
+      - --data-dir=/data/tikv1
+      - --pd=pd1:2379,pd2:2379,pd3:2379
+    depends_on:
+      - pd1
+      - pd2
+      - pd3
+    volumes:
+      - tikv1:/data
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - tidb
+
+  tikv2:
+    image: pingcap/tikv:latest
+    command:
+      - --addr=0.0.0.0:20160
+      - --advertise-addr=tikv2:20160
+      - --data-dir=/data/tikv2
+      - --pd=pd1:2379,pd2:2379,pd3:2379
+    depends_on:
+      - pd1
+      - pd2
+      - pd3
+    volumes:
+      - tikv2:/data
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - tidb
+
+  tikv3:
+    image: pingcap/tikv:latest
+    command:
+      - --addr=0.0.0.0:20160
+      - --advertise-addr=tikv3:20160
+      - --data-dir=/data/tikv3
+      - --pd=pd1:2379,pd2:2379,pd3:2379
+    depends_on:
+      - pd1
+      - pd2
+      - pd3
+    volumes:
+      - tikv3:/data
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - tidb
+
+  tidb:
+    image: pingcap/tidb:latest
+    command:
+      - --store=tikv
+      - --path="pd1:2379,pd2:2379,pd3:2379"
+    depends_on:
+       - tikv1
+       - tikv2
+       - tikv3
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - tidb
+
+volumes:
+  pd1:
+  pd2:
+  pd3:
+  tikv1:
+  tikv2:
+  tikv3:
+
+networks:
+  traefik_proxy:
+    external: true
+  tidb:

@@ -1,0 +1,45 @@
+version: "3.3"
+services:
+  postgres:
+    image: postgres
+    restart: always
+    networks:
+      - statup
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: statup
+      POSTGRES_USER: statup
+      POSTGRES_DB: statup
+  server:
+    image: hunterlong/statup
+    volumes:
+      - statup:/app
+    depends_on:
+      - postgres
+    environment:
+      VIRTUAL_HOST: localhost
+      VIRTUAL_PORT: 8080
+      DB_CONN: postgres
+      DB_HOST: postgres
+      DB_USER: statup
+      DB_PASS: statup
+      DB_DATABASE: statup
+      NAME: Statup
+      DESCRIPTION: This is a Statup Docker Compose instance
+    deploy:
+      labels:
+        - traefik.backend=statup
+        - traefik.frontend.rule=Host:statup.cloud-labs.io
+        - traefik.docker.network=traefik_proxy
+        - traefik.port=8080
+    networks:
+      - traefik_proxy
+      - statup
+networks:
+  traefik_proxy:
+    external: true
+  statup:
+volumes:
+  statup:
+  postgres:

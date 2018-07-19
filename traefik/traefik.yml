@@ -2,11 +2,19 @@ version: '3.3'
 services:
   proxy:
     image: traefik
-    command: --web --docker --docker.domain=cloud-labs.io --docker.watch --docker.swarmmode=true --logLevel=DEBUG
+    command:
+      - --api 
+      - --api.dashboard=true 
+      - --api.statistics
+      - --docker 
+      - --docker.domain=cloud-labs.io 
+      - --docker.watch 
+      - --docker.swarmmode=true 
+      - --logLevel=INFO
     deploy:
       labels:
         - traefik.backend=traefik
-        - traefik.frontend.rule=Host:monitor.cloud-labs.io
+        - traefik.frontend.rule=Host:monitor.cloud-labs.io 
         - traefik.port=8080
         - traefik.docker.network=traefik_proxy
     networks:

@@ -1,0 +1,28 @@
+version: '3.3'
+services:
+  prometheus:
+    image: prom/prometheus
+    networks:
+      - trickster
+    
+  trickster:
+    image: tricksterio/trickster
+    networks:
+      - traefik_proxy
+      - trickster
+    depends_on:
+      - prometheus
+    environment:
+      TRK_ORIGIN: http://prometheus:9090
+      TRK_PROXY_PORT: 8000
+    deploy:
+      labels:
+        - traefik.backend=trickster
+        - traefik.frontend.rule=Host:trickster.cloud-labs.io
+        - traefik.docker.network=traefik_proxy
+        - traefik.port=8000
+    
+networks:
+  traefik_proxy:
+    external: true
+  trickster:

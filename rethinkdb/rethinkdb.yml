@@ -1,0 +1,46 @@
+version: "3.3"
+services:
+  primary:
+    image: rethinkdb
+    command: rethinkdb --bind all --no-http-admin
+    networks:
+      - rethinkdb
+    volumes:
+      - primary:/data
+      
+  secondary:
+    image: rethinkdb
+    depends_on:
+      - primary
+    command: rethinkdb --bind all --no-http-admin --join primary
+    volumes:
+      - secondary:/data
+    networks:
+      - rethinkdb
+  
+  proxy:
+    image: rethinkdb
+    depends_on:
+      - primary
+      - secondary
+    command: rethinkdb proxy --bind all --join primary
+    networks:
+      - traefik_proxy
+      - rethinkdb
+    ports:
+      - "28015:28015"
+    deploy:
+      labels:
+        - traefik.backend=rethinkdb
+        - traefik.docker.network=traefik_proxy
+        - traefik.frontend.rule=Host:rethinkdb.cloud-labs.io
+        - traefik.port=8080
+        
+networks:
+  rethinkdb:
+  traefik_proxy:
+    external: true
+
+volumes:
+  primary:
+  secondary:

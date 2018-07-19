@@ -1,0 +1,63 @@
+version: '3.3'
+services:
+  crate1:
+    image: crate
+    ports:
+      - "5432:5432"
+    command: 
+      - -Cnode.name=crate1
+      - -Cnetwork.host=_site_
+    enviroment:
+      CRATE_HEAP_SIZE: 2g
+    volumes:
+      - crate1:/data
+    networks:
+      - crate
+      - traefik_proxy
+    deploy:
+      labels:
+        - traefik.backend=cratedb
+        - traefik.frontend.rule=Host:cratedb.cloud-labs.io
+        - traefik.docker.network=traefik_proxy
+        - traefik.port=4200
+  
+  crate2:
+    image: crate
+    depends_on:
+      - crate1
+    command: 
+      - -Cnode.name=crate2
+      - -Cnetwork.host=_site_
+      - -Cdiscovery.zen.ping.unicast.hosts=crate1
+    enviroment:
+      CRATE_HEAP_SIZE: 2g
+    volumes:
+      - crate2:/data
+    networks:
+      - crate
+    
+  crate3:
+    image: crate
+    depends_on:
+      - crate1
+      - crate2
+    command: 
+      - -Cnode.name=crate3
+      - -Cnetwork.host=_site_
+      - -Cdiscovery.zen.ping.unicast.hosts=crate1,crate2
+    enviroment:
+      CRATE_HEAP_SIZE: 2g
+    volumes:
+      - crate3:/data
+    networks:
+      - crate
+
+volumes:
+  crate1:
+  crate2:
+  crate3:
+
+networks:
+  crate:
+  traefik_proxy:
+    external: true

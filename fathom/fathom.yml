@@ -1,0 +1,44 @@
+version: '3.3'
+services:
+  db:
+    image: mysql
+    networks:
+      - usefathom
+    volumes:
+      - db:/var/lib/mysql
+    environment:
+      - "MYSQL_ALLOW_EMPTY_PASSWORD=false"
+      - "MYSQL_ROOT_PASSWORD=fathom"
+      - "MYSQL_USER=fathom"
+      - "MYSQL_DATABASE=fathom"
+      - "MYSQL_PASSWORD=fathom"
+
+  fathom:
+    image: usefathom/fathom
+    depends_on:
+      - db
+    networks:
+      - usefathom
+      - traefik_proxy
+    environment:
+      FATHOM_SERVER_ADDR: ":8080"
+      FATHOM_DEBUG: "false"
+      FATHOM_DATABASE_DRIVER: mysql
+      FATHOM_DATABASE_HOST: "db:3306"
+      FATHOM_DATABASE_NAME: fathom
+      FATHOM_DATABASE_USER: fathom
+      FATHOM_DATABASE_PASSWORD: fathom
+      FATHOM_SECRET: TWEn6GXQDx45PZfmJWvyGpXf5M8b94bszgw8JcJWEd6WxgrnUkLatS34GwjPTvZb
+    deploy:
+      labels:
+        - traefik.backend=fathom
+        - traefik.frontend.rule=Host:fathom.cloud-labs.io
+        - traefik.docker.network=traefik_proxy
+        - traefik.port=8080
+volumes:
+  db:
+
+networks:
+  usefathom:
+  traefik_proxy:
+    external: true

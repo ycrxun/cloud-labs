@@ -1,11 +1,26 @@
 version: '3.3'
 services:
+  agent:
+    image: portainer/agent
+    environment:
+      AGENT_CLUSTER_ADDR: tasks.agent
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - portainer
+    deploy:
+      mode: global
   server:
     image: portainer/portainer
-    command: -H unix:///var/run/docker.sock
+    command: -H tcp://tasks.agent:9001 --tlsskipverify
     networks:
+      - portainer
       - traefik_proxy
     deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
       labels:
         - traefik.backend=portainer
         - traefik.frontend.rule=Host:console.cloud-labs.io
@@ -16,6 +31,8 @@ services:
       - portainer:/data
 
 networks:
+  portainer:
+    driver: overlay
   traefik_proxy:
     external: true
 

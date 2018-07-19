@@ -1,0 +1,143 @@
+version: '3.3'
+services:
+  primary:
+    image: consul:latest
+    command:
+      - consul
+      - agent
+      - -node=primary
+      #- -disable-host-node-id=true
+      - -server
+      - -bootstrap-expect=1
+      - -datacenter=aws
+      - -advertise={{ GetInterfaceIP "eth0" }}
+      - -client=0.0.0.0
+      - -data-dir=/consul
+    environment:
+      - "CONSUL_LOCAL_CONFIG={\"disable_update_check\": true}"
+      - "CONSUL_CLIENT_INTERFACE=eth0"
+      - "CONSUL_BIND_INTERFACE=eth0" 
+    volumes:
+      - primary:/consul
+    networks:
+      - consul
+      - traefik_proxy
+  
+  secondary:
+    image: consul:latest
+    depends_on:
+      - primary
+    command:
+      - consul
+      - agent
+      - -node=secondary
+      #- -disable-host-node-id=true
+      - -server
+      - -datacenter=aws
+      - -retry-join=primary
+      - -advertise={{ GetInterfaceIP "eth0" }}
+      - -client=0.0.0.0
+      - -data-dir=/consul
+    environment:
+      - "CONSUL_LOCAL_CONFIG={\"disable_update_check\": true}"
+      - "CONSUL_CLIENT_INTERFACE=eth0"
+      - "CONSUL_BIND_INTERFACE=eth0" 
+    volumes:
+      - secondary:/consul
+    networks:
+      - consul
+      - traefik_proxy
+  
+  tertiary:
+    image: consul:latest
+    depends_on:
+      - primary
+    command:
+      - consul
+      - agent
+      - -node=tertiary
+      #- -disable-host-node-id=true
+      - -server
+      - -datacenter=aws
+      - -retry-join=primary
+      - -advertise={{ GetInterfaceIP "eth0" }}
+      - -client=0.0.0.0
+      - -data-dir=/consul
+    environment:
+      - "CONSUL_LOCAL_CONFIG={\"disable_update_check\": true}"
+      - "CONSUL_CLIENT_INTERFACE=eth0"
+      - "CONSUL_BIND_INTERFACE=eth0" 
+    volumes:
+      - tertiary:/consul
+    networks:
+      - consul
+      - traefik_proxy
+  
+  client:
+    image: consul:latest
+    depends_on:
+      - primary
+    ports:
+      - 8500:8500
+    command:
+      - consul
+      - agent
+      - -node=client
+      #- -disable-host-node-id=true
+      - -datacenter=aws
+      - -retry-join=primary
+      - -advertise={{ GetInterfaceIP "eth0" }}
+      - -client=0.0.0.0
+      - -data-dir=/consul
+    environment:
+      - "CONSUL_LOCAL_CONFIG={\"disable_update_check\": true}"
+      - "CONSUL_CLIENT_INTERFACE=eth0"
+      - "CONSUL_BIND_INTERFACE=eth0" 
+    volumes:
+      - client:/consul
+    networks:
+      - consul
+      - traefik_proxy
+
+  ui:
+    image: consul:latest
+    command:
+      - consul
+      - agent
+      - -node=ui
+      #- -disable-host-node-id=true
+      - -datacenter=aws
+      - -retry-join=primary
+      - -advertise={{ GetInterfaceIP "eth0" }}
+      - -client=0.0.0.0
+      - -data-dir=/consul
+      - -ui
+    environment:
+      - "CONSUL_LOCAL_CONFIG={\"disable_update_check\": true}"
+      - "CONSUL_CLIENT_INTERFACE=eth0"
+      - "CONSUL_BIND_INTERFACE=eth0" 
+      - "CONSUL_UI_BETA=true"
+    deploy:
+      labels:
+        - traefik.backend=consul
+        - traefik.frontend.rule=Host:consul.cloud-labs.io
+        - traefik.docker.network=traefik_proxy
+        - traefik.port=8500
+    volumes:
+      - ui:/consul
+    networks:
+      - consul
+      - traefik_proxy
+      
+networks:
+  traefik_proxy:
+    external: true
+  consul:
+
+volumes:
+  primary:
+  secondary:
+  tertiary:
+  client:
+  ui:
+    
