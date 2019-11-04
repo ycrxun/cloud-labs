@@ -12,7 +12,8 @@ services:
       - --accessLog
       - --metrics.prometheus.entrypoint=metrics
       - --providers.docker
-      - --providers.docker.swarmmode=true
+      - --providers.docker.swarmMode=true
+      - --providers.docker.exposedByDefault=false
     deploy:
       labels:
         - traefik.enable=true
