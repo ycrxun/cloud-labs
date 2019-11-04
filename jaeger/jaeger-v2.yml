@@ -1,0 +1,25 @@
+version: "3.3"
+services:
+  server:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+      - "5778:5778"
+      - "9411:9411"
+      - "14268:14268"
+      - "14250:14250"
+    command:
+      - --collector.zipkin.http-port=9411
+    networks:
+      - traefik_proxy
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.services.jaeger.loadbalancer.server.port=16686
+        - traefik.http.routers.jaeger.rule=Host(`jaeger.cloud-labs.io`)
+        - traefik.http.routers.jaeger.entrypoints=web
+        - traefik.docker.network=traefik_proxy
+networks:
+  traefik_proxy:
+    external: true
