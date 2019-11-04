@@ -1,0 +1,33 @@
+version: '3.3'
+services:
+  proxy:
+    image: traefik:v2.0
+    command:
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.metrics.address=:8081
+      - --log.level=INFO
+      - --api.dashboard=true
+      - --api.insecure=true
+      - --accessLog
+      - --metrics.prometheus.entrypoint=metrics
+      - --providers.docker
+      - --providers.docker.swarmmode=true
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=traefik_proxy
+        - traefik.http.services.traefik.loadbalancer.server.port=8080
+        - traefik.http.routers.traefik.rule=Host(`traefik.cloud-labs.io`)
+        - traefik.http.routers.traefik.middlewares=auth
+        - traefik.http.middlewares.auth.basicauth.users=test:$$apr1$$H6uskkkW$$IgXLP6ewTrSuBkTrqE8wj/,test2:$$apr1$$d9hr9HBB$$4HxwgUir3HP4EsggP/QNo0
+    networks:
+      - proxy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8081:8081"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+networks:
+  proxy:
