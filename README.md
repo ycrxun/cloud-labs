@@ -14,4 +14,4 @@ $ ./cloud-labs.sh traefik v2
 
 > for v1: `./cloud-labs.sh traefik`
 
-### [more](https://ronggle.com/2018/05/13/cloud-labs/)
+### [more](https://ronggle.com/2018/cloud-labs/)
